@@ -1,6 +1,9 @@
 # Wall Drawing RoBuc
 
-For Crescendo, I want to make a wall drawing robot that is capable of using both a marker and a spray can to make art live.  3D printed, read from SD card, powerfull steppers, stepper based pen (not servo) and with LED status lights to tell what color marker to load next.  My implementation is based on Fumik Robot, with a re-design of the Robot platform.  First Version will be a modified version of the Fumik code, with later versions being a complete re-write.
+For FRC 2023-24 "Crescendo", I want to make a wall drawing robot that is capable of using both a marker and a spray can to make art live.  3D printed, read from SD card, powerfull steppers, stepper based pen (not servo) and with LED status lights to tell what color marker to load next.  My implementation is based on Fumik Robot, with a re-design of the Robot platform.  First Version will be a modified version of the Fumik code, with later versions being a complete re-write.
+
+New Hardware Design:
+https://a360.co/45KpkjN
 
 
 The orignal Fumik code and instructions:
