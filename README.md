@@ -14,20 +14,18 @@ For FRC 2023-24 "Crescendo", I want to make a wall drawing robot that is capable
 New Hardware Design:
 https://a360.co/45KpkjN
 
-
+<br>
+<hr>
 The orignal Fumik code and instructions:
-
+Visit the original Fumik at https://www.fumik.com/ 
+<BR>
 Fumik Arduino code for robot is at: https://github.com/fumikrobot/source-code/blob/main/fumik_rv9.ino
 <p align="center">
   <img  src="https://github.com/fumikrobot/NonCodeFiles/blob/main/4.jpg">
 </p>
-
-
-
 <u><b> How to start a picture: </b></u>
 <br/>
 3.1 Your Picture need to draw
-
 3.2 Convert picture to vector (*.svg file) by CorelDraw (or any other software support *.svg file)
 <br/>
 (see sample file test.cdr -> test.svg at https://github.com/fumikrobot/source-code/tree/main/draw%20file%20prepare)
@@ -42,7 +40,7 @@ Fumik Arduino code for robot is at: https://github.com/fumikrobot/source-code/bl
 You can support and purchase the original at:
 The robot can help us to make drawing on wall for fun or decoration. You can use robot as gift or STEM KIT for education for your kid, or student, hobbies need to understand about wall drawing robot.
 <br/><br/>
-The robot is easy to assemble, set-up for drawing. Let's support robot at Crowfunding at https://igg.me/at/fumik-robot
+Crowfunding at https://igg.me/at/fumik-robot
 <br/>
-Visit the original Fumik at https://www.fumik.com/ 
+
 
