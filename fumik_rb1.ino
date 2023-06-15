@@ -24,6 +24,9 @@ Servo pen_servo;               // for servo pen
 // Declare our NeoPixel strip object:
 Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
 
+//how long to debounce]
+#define DEBOUNCE_SLEEP
+
 // Code Mode Switches
 // 2 wired switches control the starting mode of the robot.
 // First switch controls the command_mode: GCODE (new limitied) or FUNCTION COMMAND (original drawing mode)
@@ -375,6 +378,43 @@ void execute_command(String draw_command) {
     draw_line(x1,y1,x2,y2);  //move pen absolute to x1,y1
   }
 
+  if (draw_command.startsWith("draw_curve")){
+    String values = draw_command.substring(draw_command.indexOf("\(")+1, draw_command.indexOf("\)"));
+    String pv = values.substring(0,values.indexOf(","));
+    float p0x = pv.toFloat();
+    values = values.substring(",");
+    pv = values.substring(0,values.indexOf(","));
+    float p0y = pv.toFloat();
+    values = values.substring(",");
+    pv = values.substring(0,values.indexOf(","));
+    float p1x = pv.toFloat();
+    values = values.substring(",");
+    pv = values.substring(0,values.indexOf(","));
+    float p1y = pv.toFloat();
+    values = values.substring(",");
+    pv = values.substring(0,values.indexOf(","));
+    float p2x = pv.toFloat();
+    values = values.substring(",");
+    pv = values.substring(0,values.indexOf(","));
+    float p2y = pv.toFloat();
+    values = values.substring(",");
+    pv = values.substring(0,values.indexOf(","));
+    float p3x = pv.toFloat();
+    values = values.substring(",");
+    pv = values.substring(0,values.indexOf(","));
+    float p3y = pv.toFloat();
+    Serial.println(draw_command);
+    Serial.println(p0x);
+    Serial.println(p0y);
+    Serial.println(p1x);
+    Serial.println(p1y);
+    Serial.println(p2x);
+    Serial.println(p2y);
+    Serial.println(p3x);
+    Serial.println(p3y);
+    draw_curve(p0x, p0y, p1x, p1y, p2x, p2y, p3x, p3y);  //draw the curve
+  }
+
   if (draw_command.startsWith("set_home")){
     String values = draw_command.substring(draw_command.indexOf("\(")+1, draw_command.indexOf("\)"));
     String x1v = values.substring(0,values.indexOf(","));
@@ -427,6 +467,12 @@ void set_rgb_color(int pixel, int red, int green, int blue){
   strip.show();
 }
 
+void set_ring_color(int pixels, int r, int g, int b){
+  for (int pix =0; pix <= pixels; pix++) {
+    set_rgb_color(pix, r, g, b);
+  }
+}
+
 void set_box_size(int wide, int tall){
   p = wide;   //mm, distance pin_a to pin_c (horizontal direction) 1600
   w2y = tall;  //mm, distance pin_a to pin_c (vertical direction)  4
@@ -435,6 +481,14 @@ void set_box_size(int wide, int tall){
 void set_home(int x0, int y0){
   pen_x0 = x0;  //mm
   pen_y0 = y0;  //mm
+}
+
+void change_pen(int R, int G, int, int B){
+  //unload Pen
+  //loop
+  set_ring_color(LED_COUNT,R,G,B);
+  // check input
+  // debounce
 }
 
 void move_a_c(float s1, float s2){
