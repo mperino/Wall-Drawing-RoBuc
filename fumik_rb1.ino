@@ -30,9 +30,16 @@ Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
 // Secong switch controls if the action_mode is INTERACTIVE(new serial like grbl) or FILE (read draw.txt or draw.gcode)
 #define COMMAND_MODE_PIN 45
 #define ACTION_MODE_PIN 47
-
 int command_state = 0;
 int action_state = 0;
+//stepper based PEN settings
+//define Pen Load and Unload switches (Momentary Buttons)
+#define PEN_LOAD_PIN 43
+#define PEN_UNLOAD_PIN 42
+#define PEN_LOAD_DISTANCE 100
+#define PEN_UNLOAD_DISTANCE 200
+int pen_load_state = 1;
+
 
 const int dirPin_c = 7;
 const int stepPin_c = 4;
@@ -58,7 +65,7 @@ float draw_res; //draw resolution
 float w2y, p;
 
 float g1, g2, step1, step2, r1, r2;
-float stepper_speed, basic_speed;
+float stepper_speed, basic_speed, by_stepper_speed;
 
 boolean pen_pos;  //false = pen at open position; true = pen at write position
 
@@ -78,7 +85,8 @@ void setup() {
   // setup servos and motion parameters
   pen_servo.attach (11); //servo motor is connected to pin 11 Arduino Mega ~ (Z+ End Stop) of Arduino cnc Shield
   pinMode(enPin, OUTPUT);
-  stepper_speed = 250; //unit steps/sec
+  stepper_speed = 250; //unit steps/sec for main steppers
+  by_stepper_speed = 250; //unit steps /sec for BY stepper
   basic_speed = 250;   //unit steps/sec; note: high speed + low resolution (draw_res) will make vibration
   stepper_a.setMaxSpeed(2000);
   stepper_a.setAcceleration(200000);  //set to max
@@ -88,9 +96,9 @@ void setup() {
   stepper_c.setAcceleration(200000);  //set to max
   stepper_c.setSpeed(stepper_speed);
 
-  stepper_p.setMaxSpeed(1400); //max 550
-  stepper_p.setAcceleration(100000);
-  stepper_p.setSpeed(1400);
+  stepper_p.setMaxSpeed(2000); //max 550
+  stepper_p.setAcceleration(200000);
+  stepper_p.setSpeed(by_stepper_speed);
 
   g1 = 63.68; //gear ratio
   g2 = g1;
@@ -205,6 +213,7 @@ void loop() {
     // Reading the file
     String draw_command, string_result;
     char char_temp = '0';
+
     myFile = SD.open("draw.txt");
 
     // variables for draw
@@ -328,7 +337,7 @@ void loop() {
 //======================================================SUB PROGRAM====================================
 void execute_command(String draw_command) {
   // variables for draw
-  float x1, y1;
+  float x1, y1, x2, y2;
   if (draw_command.startsWith("move_pen_abs")){
     String values = draw_command.substring(draw_command.indexOf("\(")+1, draw_command.indexOf("\)"));
     String x1v = values.substring(0,values.indexOf(","));
@@ -340,9 +349,58 @@ void execute_command(String draw_command) {
   //  Serial.println(x1);
   //  Serial.println(y1);
   }
+
   if (draw_command.startsWith("endfile")){
     Serial.println("Reached File End");
   }
+
+  if (draw_command.startsWith("draw_line")){
+    String values = draw_command.substring(draw_command.indexOf("\(")+1, draw_command.indexOf("\)"));
+    String x1v = values.substring(0,values.indexOf(","));
+    x1 = x1v.toFloat();
+    values = values.substring(",");
+    String y1v = values.substring(0,values.indexOf(","));
+    y1 = y1v.toFloat();
+    values = values.substring(",");
+    String x2v = values.substring(0,values.indexOf(","));
+    x2 = x2v.toFloat();
+    values = values.substring(",");
+    String y2v = values.substring(0,values.indexOf(","));
+    y2 = y2v.toFloat();
+    Serial.println(draw_command);
+    Serial.println(x1);
+    Serial.println(y1);
+    Serial.println(x2);
+    Serial.println(y2);
+    draw_line(x1,y1,x2,y2);  //move pen absolute to x1,y1
+  }
+
+  if (draw_command.startsWith("set_home")){
+    String values = draw_command.substring(draw_command.indexOf("\(")+1, draw_command.indexOf("\)"));
+    String x1v = values.substring(0,values.indexOf(","));
+    x1 = x1v.toInt();
+    values = values.substring(",");
+    String y1v = values.substring(0,values.indexOf(","));
+    y1 = y1v.toInt();
+    Serial.println(draw_command);
+    Serial.println(x1);
+    Serial.println(y1);
+    set_home(x1,y1);  //Set Starting Co-ordinate
+  }
+
+  if (draw_command.startsWith("set_box_size")){
+    String values = draw_command.substring(draw_command.indexOf("\(")+1, draw_command.indexOf("\)"));
+    String x1v = values.substring(0,values.indexOf(","));
+    x1 = x1v.toInt();
+    values = values.substring(",");
+    String y1v = values.substring(0,values.indexOf(","));
+    y1 = y1v.toInt();
+    Serial.println(draw_command);
+    Serial.println(x1);
+    Serial.println(y1);
+    set_box_size(x1,y1);  //Set Starting Co-ordinate
+  }
+
   if (draw_command.startsWith("M150")){
     String values = draw_command.substring(draw_command.indexOf("\(")+1, draw_command.indexOf("\)"));
     String rs = values.substring(values.indexOf("R")+1);
@@ -357,17 +415,28 @@ void execute_command(String draw_command) {
     String pi = values.substring(values.indexOf("I")+1);
     pi = pi.substring(0,gr.indexOf(" "));
     int pixel = pi.toInt();
-    setrgb_color(pixel, red, green, blue);
+    set_rgb_color(pixel, red, green, blue);
 
   //  Serial.println(draw_command);
   //  Serial.println(x1);
   //  Serial.println(y1);
   }
 }
-void setrgb_color(int pixel, int red, int green, int blue){
+void set_rgb_color(int pixel, int red, int green, int blue){
   strip.setPixelColor(pixel, red, green, blue);
   strip.show();
 }
+
+void set_box_size(int wide, int tall){
+  p = wide;   //mm, distance pin_a to pin_c (horizontal direction) 1600
+  w2y = tall;  //mm, distance pin_a to pin_c (vertical direction)  4
+}
+
+void set_home(int x0, int y0){
+  pen_x0 = x0;  //mm
+  pen_y0 = y0;  //mm
+}
+
 void move_a_c(float s1, float s2){
   int stepper_a_speed, stepper_c_speed; //unit steps/sec
 
