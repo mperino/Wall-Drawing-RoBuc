@@ -6,6 +6,7 @@
 
 // Version 0.1, Code Status (partially working)
 // LED code works
+// M150 Rxxx Gxxx Bxxx Ixxx added
 // Code Mode Switches work
 // interactive works with move_pen_abs()
 
@@ -342,8 +343,31 @@ void execute_command(String draw_command) {
   if (draw_command.startsWith("endfile")){
     Serial.println("Reached File End");
   }
-}
+  if (draw_command.startsWith("M150")){
+    String values = draw_command.substring(draw_command.indexOf("\(")+1, draw_command.indexOf("\)"));
+    String rs = values.substring(values.indexOf("R")+1);
+    rs = rs.substring(0,rs.indexOf(" "));
+    int red = rs.toInt();
+    String gr = values.substring(values.indexOf("G")+1);
+    gr = gr.substring(0,gr.indexOf(" "));
+    int green = gr.toInt();
+    String bl = values.substring(values.indexOf("B")+1);
+    bl = bl.substring(0,gr.indexOf(" "));
+    int blue = bl.toInt();
+    String pi = values.substring(values.indexOf("I")+1);
+    pi = pi.substring(0,gr.indexOf(" "));
+    int pixel = pi.toInt();
+    setrgb_color(pixel, red, green, blue);
 
+  //  Serial.println(draw_command);
+  //  Serial.println(x1);
+  //  Serial.println(y1);
+  }
+}
+void setrgb_color(int pixel, int red, int green, int blue){
+  strip.setPixelColor(pixel, red, green, blue);
+  strip.show();
+}
 void move_a_c(float s1, float s2){
   int stepper_a_speed, stepper_c_speed; //unit steps/sec
 
